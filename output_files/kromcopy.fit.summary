@@ -1,0 +1,18 @@
+Fitter Status : Successful - Sat Apr 09 15:02:37 2016
+Quartus Prime Version : 15.1.0 Build 185 10/21/2015 SJ Lite Edition
+Revision Name : kromcopy
+Top-level Entity Name : kromcopy
+Family : MAX 10
+Device : 10M08DAF484C8GES
+Timing Models : Final
+Total logic elements : 1,116 / 8,064 ( 14 % )
+    Total combinational functions : 701 / 8,064 ( 9 % )
+    Dedicated logic registers : 874 / 8,064 ( 11 % )
+Total registers : 874
+Total pins : 217 / 250 ( 87 % )
+Total virtual pins : 0
+Total memory bits : 215,040 / 387,072 ( 56 % )
+Embedded Multiplier 9-bit elements : 0 / 48 ( 0 % )
+Total PLLs : 1 / 2 ( 50 % )
+UFM blocks : 0 / 1 ( 0 % )
+ADC blocks : 0 / 1 ( 0 % )

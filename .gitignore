@@ -17,6 +17,13 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Repo.
+simulation/
+db/
+incremental_db/
+stp1.stp
+*.bak
+
 # =========================
 # Operating System Files
 # =========================
