@@ -1,0 +1,206 @@
+
+KDATA	EQU 2000H
+HOT		EQU 00ADH
+;HOT	EQU 0E804H
+MSG		EQU 0015H
+LETNL	EQU 0006H
+PRNTS	EQU 000CH
+ASC		EQU 03DAH
+PRNT	EQU 0012H
+??KEY	EQU 09B3H
+MES_W	EQU 0467H		; "WRITING "
+
+CMD		EQU 0BBH
+PGM		EQU 0B8H
+STS		EQU 0BFH
+ADR		EQU 0BAH
+DAT		EQU 0B9H
+
+WEN		EQU 06H
+BLK		EQU 0C7H
+
+		ORG	1800H
+
+START:
+		JR S1
+PAGE:					; Page To Write Data
+		DB 00H			; KROM=00-03, JROM=08-0F
+START2:
+		JP BLKERS
+S1:
+		CALL LETNL
+		LD DE,MES_S0
+		CALL MSG
+		CALL LETNL
+		LD DE,MES_S1
+		CALL MSG
+
+		LD A,(PAGE)		; From
+		SRL A
+		CALL ASC
+		CALL PRNT
+		LD HL,0000H
+		LD A,(PAGE)
+		SRL A
+		RR H
+		CALL DISP4
+
+		CALL PRNTS		; " - "
+		LD A,'-'
+		CALL PRNT
+		CALL PRNTS
+
+		LD A,(PAGE)		; To
+		SRL A
+		CALL ASC
+		CALL PRNT
+		LD HL,0FEFFH
+		LD A,(PAGE)
+		SRL A
+		RR H
+		CALL DISP4
+		CALL LETNL
+
+		LD DE,MES_S2
+		CALL MSG
+		CALL ??KEY
+		CP 0CBH
+		JR NZ,S2
+		CALL LETNL
+		LD DE,MES_A
+		CALL MSG
+		CALL LETNL
+		JP HOT
+S2:
+		LD HL,KDATA
+		LD (DPTR),HL
+S3:
+		CALL LETNL
+		LD DE,MES_W
+		CALL MSG
+		LD A,(PAGE)
+		SRL A
+		CALL ASC
+		CALL PRNT
+
+		LD HL,(DPTR)
+		LD A,H
+		SUB 20H
+		RLA
+		LD H,A
+		LD A,(PAGE)
+		RRA
+		RR H
+		CALL DISP4
+
+		LD A,0FFH
+		OUT (ADR),A		; Reset Buffer Address
+		LD HL,(DPTR)	; Get Data Pointer
+		PUSH HL
+S4:
+		LD A,(HL)
+		OUT (DAT),A
+		INC HL
+		LD A,L
+		OR A
+		JR NZ,S4
+		LD (DPTR),HL	; Save Next Pointer
+		POP HL
+S5:
+		LD A,WEN		; Set Write Enable Flag
+		OUT (CMD),A
+		IN A,(STS)
+		SRL A			; Busy?
+		JR C,S5
+		SRL A			; Write enabled?
+		JR NC,S5
+
+		LD A,H
+		SUB 20H
+		RLA
+		LD L,A
+		LD A,(PAGE)
+		RRA
+		LD B,A
+		RR L
+		LD A,L
+		LD C,PGM
+		OUT (C),A		; Page Program
+S6:
+		IN A,(STS)
+		SRL A
+		JR C,S6
+
+		LD A,(DPTR+1)
+		CP 0A0H
+		JR NZ,S3
+
+		CALL LETNL
+		LD DE,MES_F
+		CALL MSG
+		CALL LETNL
+		JP HOT
+
+; Bulk Erase
+BLKERS:
+		CALL LETNL
+		LD DE,MES_B
+		CALL MSG
+		CALL LETNL
+B0:
+		LD A,WEN		; Set Write Enable Flag
+		OUT (CMD),A
+		IN A,(STS)
+		SRL A			; Busy?
+		JR C,B0
+		SRL A			; Write enabled?
+		JR NC,B0
+
+		LD A,BLK
+		OUT (CMD),A
+B1:
+		IN A,(STS)
+		SRL A
+		JR C,B1
+		LD DE,MES_F
+		CALL MSG
+		CALL LETNL
+		JP HOT
+
+DISP2:
+		PUSH AF
+		SRL A
+		SRL A
+		SRL A
+		SRL A
+		CALL ASC
+		CALL PRNT
+		POP AF
+		CALL ASC
+		CALL PRNT
+		RET
+
+DISP4:
+		LD A,H
+		CALL DISP2
+		LD A,L
+		CALL DISP2
+		RET
+
+MES_S0:
+		DB "** KANJI/JISHO ROM PROGRAMMER **",0DH
+MES_S1:
+		DB "PROGRAM AREA IS ",0DH
+MES_S2:
+		DB "HIT ANY KEY TO START.",0DH
+MES_B:
+		DB "BULK ERASE START.",0DH
+MES_F:
+		DB "FINISHED.",0DH
+MES_A:
+		DB "ABORTED.",0DH
+
+DPTR:
+		DW 0000H
+
+		END
